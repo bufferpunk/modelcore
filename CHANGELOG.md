@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **Extended test coverage**: 8 new tests (60 total) — `{ type: undefined/null/"string" }` schema rejection, `Union(Array, String)` value discrimination, scalar-only coerce tests, and `Union(Object, String)` skipping object-key validation for string values.
+- **Readonly enum array support**: Updated `FieldConfig.enum` to allow `readonly any[]` for `as const` schema declarations.
 
 ### Changed
 

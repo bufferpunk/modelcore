@@ -475,19 +475,34 @@ ModelCore throws typed error classes for every failure mode:
 | Error class | Trigger |
 |---|---|
 | `ValidationError` | Custom `validate` hook throws |
-| `TypeValidationError` | Value constructor doesn't match schema type |
+| `TypeValidationError` | Value constructor doesn't match schema type, or value has no prototype chain |
 | `RequiredError` | Required field is missing |
 | `EnumValueError` | Value not in allowed enum set |
 | `RangeError` | Value exceeds min/max |
 | `ImmutableObjectError` | Write to immutable class |
 | `ImmutablePropertyError` | Write to immutable field |
-| `SchemaDefinitionError` | Malformed schema definition |
+| `SchemaDefinitionError` | Malformed schema definition, `{ type: undefined }`, `{ type: null }`, or missing `static schema` |
 | `MissingPropertyError` | Nested required property missing |
 | `ValueError` | Array method misuse (e.g., `fill()`) |
 
 All errors extend `ModelCoreError`, which carries `source`, `path`, `expected`, `received`, and `code` properties for programmatic handling.
 
 ---
+
+## Defensive guarantees
+
+ModelCore guards against several degenerate inputs that would otherwise cause raw `TypeError` crashes or silent data corruption:
+
+| Input | Before | After |
+|---|---|---|
+| `{ type: undefined }` in schema | Raw `TypeError: Cannot read properties of undefined` | `SchemaDefinitionError` with path and code |
+| `{ type: null }` in schema | Raw `TypeError` | `SchemaDefinitionError` with path and code |
+| `Object.create(null)` as field value | Raw `TypeError: Cannot read properties of undefined (reading 'name')` | `TypeValidationError` with message `"...got null-prototype object"` |
+| `Union(Array, String)` with string input | String silently split into char array `['h','e','l','l','o']` | String preserved as-is |
+| `"42"` for a `Number` field (no `coerce: true`) | Silently accepted as string | `TypeValidationError` — use `coerce: true` to auto-convert |
+| Subclass with no `static schema` | Silent empty object | `SchemaDefinitionError` with class name |
+
+
 
 ## Performance
 

@@ -4,7 +4,7 @@ export interface FieldConfig {
     optional?: boolean;
     required?: boolean;
     default?: any;
-    enum?: any[];
+    enum?: any[] | readonly any[];
     max?: number;
     min?: number;
     beforeChecks?: (value: any) => any;
